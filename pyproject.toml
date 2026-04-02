@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "ai-agent-builder"
+version = "0.0.1"
+description = ""
+authors = ["ThatNguyen <kanghyomun3@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+openai = "^2.30.0"
+google-generativeai = "^0.8.6"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+isort = "^5.13.2"
+flake8 = "^7.1.1"
+pylint = "^3.3.3"
+
+[tool.black]
+line-length = 120
+target-version = ['py311']
+exclude = '''
+(
+  /(
+      \.venv
+  )
+)
+'''
+
+[tool.isort]
+profile = "black"
+extend_skip_glob = []
+multi_line_output = 3
+
+[tool.pylint.main]
+ignore = [""]
+ignore-paths = [""]
+fail-under = 8
+
+[tool.pylint."messages control"]
+confidence = ["HIGH", "CONTROL_FLOW", "INFERENCE", "INFERENCE_FAILURE", "UNDEFINED"]
+disable = "all"
+enable = [
+    "empty-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "missing-module-docstring"
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
