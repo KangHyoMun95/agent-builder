@@ -1,0 +1,326 @@
+{
+  "state": "done",
+  "retry_count": 1,
+  "artifacts": {
+    "requirements": {
+      "decision": "NEED_USER_INPUT",
+      "confidence": 0.6,
+      "reasoning": "The core features for the todo app are clear, but key user interactions like editing items, filtering the list, and input validation are not specified. Clarifying these requirements is essential to define the full scope and avoid incorrect assumptions.",
+      "question": "The basic features are understood. To ensure the application meets your expectations, please clarify the following:\n1. **Editing:** Should users be able to edit the title or description of a todo after it has been created?\n2. **Filtering:** When viewing the list, should users have options to filter by 'All', 'Active', and 'Completed' todos?\n3. **Empty Todos:** What should happen if a user tries to create a todo with an empty title?",
+      "requirements": {
+        "prd_summary": "A web application for managing a personal list of tasks. Users can add, view, mark as complete, and delete todo items. The application will persist data for a single user session and does not require authentication.",
+        "user_stories": [
+          {
+            "title": "Add a new todo item",
+            "description": "As a user, I want to add a new todo with a title and description so that I can capture tasks I need to complete.",
+            "acceptance_criteria": [
+              "An input form with fields for 'title' and 'description' is visible.",
+              "A 'submit' or 'add' button exists.",
+              "When the form is submitted, the new todo item appears in the list.",
+              "The new todo is marked as 'incomplete' by default."
+            ]
+          },
+          {
+            "title": "View the list of todos",
+            "description": "As a user, I want to see all my todo items so that I have an overview of what I need to do.",
+            "acceptance_criteria": [
+              "All created todo items are displayed in a list.",
+              "Each item in the list clearly shows its title, description, and completion status."
+            ]
+          },
+          {
+            "title": "Mark a todo as completed",
+            "description": "As a user, I want to mark a todo item as completed so that I can track my progress.",
+            "acceptance_criteria": [
+              "Each todo item has a control (e.g., a checkbox) to change its completion status.",
+              "Activating the control toggles the item's status between 'complete' and 'incomplete'.",
+              "The visual appearance of a completed item is distinct from an incomplete one (e.g., strikethrough text)."
+            ]
+          },
+          {
+            "title": "Delete a todo item",
+            "description": "As a user, I want to delete a todo item so that I can remove tasks that are no longer needed.",
+            "acceptance_criteria": [
+              "Each todo item has a 'delete' button.",
+              "Clicking the 'delete' button prompts for confirmation.",
+              "Upon confirmation, the item is permanently removed from the list."
+            ]
+          }
+        ],
+        "non_functional": {
+          "performance": "UI actions (add, delete, complete) should feel instantaneous, completing in under 300ms.",
+          "security": "No authentication is required. No sensitive data will be stored.",
+          "usability": "The interface should be clean, intuitive, and usable on modern desktop web browsers."
+        },
+        "constraints": [
+          "The application is for a single user; no multi-user or authentication features are needed.",
+          "Data persistence is required (todos should remain after a page refresh)."
+        ],
+        "assumptions": [
+          "All todos are visible to any visitor of the application.",
+          "The order of todos in the list is not significant, but newly added items could appear at the top or bottom.",
+          "Users will not need to handle a very large number of todos (e.g., >1000), so simple list rendering is sufficient."
+        ]
+      },
+      "error": false
+    },
+    "architecture": {
+      "decision": "DECIDED",
+      "confidence": 0.9,
+      "reasoning": "The requirements describe a standard CRUD application, for which a simple monolithic architecture with a separate frontend and backend is a well-established and efficient pattern. The chosen tech stack (React, FastAPI, SQLite) is modern, widely supported, and ideal for rapid development of such an application. SQLite fulfills the persistence requirement without the overhead of a dedicated database server, which is appropriate for a single-user application. The tasks are clearly divisible and can be worked on in parallel by the respective roles.",
+      "question": null,
+      "architecture": {
+        "style": "monolith",
+        "tech_stack": {
+          "frontend": [
+            "React",
+            "TailwindCSS"
+          ],
+          "backend": [
+            "FastAPI",
+            "Python"
+          ],
+          "database": "SQLite",
+          "infrastructure": [
+            "Docker"
+          ]
+        },
+        "high_level_design": "A single-page application (SPA) built with React consumes a RESTful backend API. The backend, built with FastAPI and Python, handles all business logic for CRUD operations on todo items. Data is persisted in a local SQLite database file. The entire application (frontend and backend) will be containerized using Docker for development and deployment consistency."
+      },
+      "task_split": {
+        "designer": "Create low-fidelity wireframes for the todo application. The design must include: 1. The main list view for all todos. 2. The input form for adding a new todo (with 'title' and 'description' fields). 3. The visual states for a single todo item: default, completed (e.g., with a strikethrough), and hover (to show the delete button).",
+        "fe_dev": "Implement the React frontend application based on the designer's wireframes and the defined API contract. Create reusable components for the todo list, individual todo items, and the 'add todo' form. Implement logic to fetch, create, update (toggle completion), and delete todos by making asynchronous calls to the backend API.",
+        "be_dev": "Develop the backend REST API using FastAPI. Implement the data model for a todo item (id, title, description, completed). Create all CRUD endpoints as specified in the API contract. Use SQLAlchemy or the native sqlite3 library to connect to and manage the SQLite database for data persistence.",
+        "data_engineer": null
+      },
+      "next_roles": [
+        "designer",
+        "fe_dev",
+        "be_dev"
+      ],
+      "api_contract": {
+        "endpoints": [
+          {
+            "path": "/todos",
+            "method": "GET",
+            "description": "Retrieve the list of all todo items.",
+            "request": {},
+            "response": {
+              "type": "array",
+              "items": {
+                "id": "integer",
+                "title": "string",
+                "description": "string",
+                "completed": "boolean"
+              }
+            }
+          },
+          {
+            "path": "/todos",
+            "method": "POST",
+            "description": "Create a new todo item.",
+            "request": {
+              "title": "string",
+              "description": "string"
+            },
+            "response": {
+              "id": "integer",
+              "title": "string",
+              "description": "string",
+              "completed": false
+            }
+          },
+          {
+            "path": "/todos/{id}",
+            "method": "PUT",
+            "description": "Update an existing todo item, primarily to toggle its completion status.",
+            "request": {
+              "title": "string (optional)",
+              "description": "string (optional)",
+              "completed": "boolean (optional)"
+            },
+            "response": {
+              "id": "integer",
+              "title": "string",
+              "description": "string",
+              "completed": "boolean"
+            }
+          },
+          {
+            "path": "/todos/{id}",
+            "method": "DELETE",
+            "description": "Delete a todo item by its ID.",
+            "request": {},
+            "response": {
+              "message": "Todo deleted successfully"
+            }
+          }
+        ]
+      },
+      "error": false
+    },
+    "design": {
+      "decision": "DECIDED",
+      "confidence": 0.8,
+      "reasoning": "The design is based on the provided user stories and the technical constraints from the architecture document. It specifies a clean, single-page layout that is easy to implement with React and TailwindCSS. A modal for delete confirmation is included as per the acceptance criteria. The confidence is not 1.0 because the BA's clarifying questions about editing and filtering are still open; this design does not include those features but can be extended once requirements are finalized.",
+      "design_spec": {
+        "pages": [
+          {
+            "name": "Todo App Main View",
+            "description": "A single-page layout. A centered main container holds the application. At the top is a header with the title 'My Todos'. Below the header is a form for adding new tasks, containing fields for a title and a description, and an 'Add Task' button. Beneath the form is the list of all todo items.",
+            "components": [
+              "Header",
+              "AddTodoForm",
+              "TextInput",
+              "TextArea",
+              "Button",
+              "TodoList",
+              "TodoItem",
+              "Checkbox",
+              "IconButton",
+              "ConfirmationModal"
+            ],
+            "interactions": "Clicking the 'Add Task' button adds a new item to the list and clears the form fields. Clicking an item's checkbox toggles its completed state, indicated by a strikethrough on the text. Hovering over a todo item reveals a 'delete' icon button. Clicking the 'delete' icon opens a confirmation modal. Confirming the deletion removes the item from the list."
+          }
+        ],
+        "style_guide": {
+          "colors": {
+            "primary": "#3B82F6",
+            "secondary": "#EF4444",
+            "background": "#F1F5F9",
+            "surface": "#FFFFFF",
+            "text_primary": "#1E293B",
+            "text_secondary": "#475569"
+          },
+          "typography": {
+            "heading": "Inter, 28px, Bold",
+            "body": "Inter, 16px, Regular",
+            "button": "Inter, 16px, Medium",
+            "form_label": "Inter, 14px, Medium"
+          },
+          "spacing": "8px grid system. Standard paddings are 16px and 24px. Margins between elements are 8px or 16px."
+        },
+        "responsive": "mobile-first"
+      },
+      "error": false
+    },
+    "fe_code": {
+      "decision": "DECIDED",
+      "confidence": 0.95,
+      "reasoning": "The provided design spec, architecture, and API contract are clear and sufficient to implement the core features of the Todo application. The implementation uses React with Hooks for state management and TailwindCSS for styling, as specified. The code is structured into reusable components for maintainability. An API client is created to handle all backend communication according to the contract. The delete confirmation modal is also implemented as per the requirements.",
+      "question": null,
+      "fe_code": {
+        "main_component": "import React, { useState, useEffect } from 'react';\nimport { Header } from './Header';\nimport { AddTodoForm } from './AddTodoForm';\nimport { TodoList } from './TodoList';\nimport { ConfirmationModal } from './ConfirmationModal';\nimport * as apiClient from './apiClient';\n\nexport const TodoApp = () => {\n  const [todos, setTodos] = useState([]);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState(null);\n  const [isModalOpen, setIsModalOpen] = useState(false);\n  const [todoToDelete, setTodoToDelete] = useState(null);\n\n  useEffect(() => {\n    apiClient.fetchTodos()\n      .then(data => {\n        setTodos(data);\n        setLoading(false);\n      })\n      .catch(err => {\n        setError('Failed to fetch todos.');\n        setLoading(false);\n      });\n  }, []);\n\n  const handleAddTodo = async (newTodo) => {\n    try {\n      const addedTodo = await apiClient.createTodo(newTodo);\n      setTodos([addedTodo, ...todos]);\n    } catch (err) {\n      setError('Failed to add todo.');\n    }\n  };\n\n  const handleToggleComplete = async (id, completed) => {\n    try {\n      const updatedTodo = await apiClient.updateTodo(id, { completed });\n      setTodos(todos.map(todo => todo.id === id ? updatedTodo : todo));\n    } catch (err) {\n      setError('Failed to update todo.');\n    }\n  };\n\n  const openDeleteModal = (id) => {\n    setTodoToDelete(id);\n    setIsModalOpen(true);\n  };\n\n  const closeDeleteModal = () => {\n    setTodoToDelete(null);\n    setIsModalOpen(false);\n  };\n\n  const handleConfirmDelete = async () => {\n    if (todoToDelete) {\n      try {\n        await apiClient.deleteTodo(todoToDelete);\n        setTodos(todos.filter(todo => todo.id !== todoToDelete));\n        closeDeleteModal();\n      } catch (err) {\n        setError('Failed to delete todo.');\n        closeDeleteModal();\n      }\n    }\n  };\n\n  return (\n    <div className=\"bg-slate-100 min-h-screen font-sans flex items-center justify-center\">\n      <div className=\"bg-white shadow-lg rounded-lg p-6 w-full max-w-2xl mx-4\">\n        <Header />\n        <AddTodoForm onAdd={handleAddTodo} />\n        {loading && <p className=\"text-slate-500 text-center mt-4\">Loading...</p>}\n        {error && <p className=\"text-red-500 text-center mt-4\">{error}</p>}\n        {!loading && !error && (\n          <TodoList \n            todos={todos} \n            onToggle={handleToggleComplete} \n            onDelete={openDeleteModal} \n          />\n        )}\n      </div>\n      <ConfirmationModal \n        isOpen={isModalOpen}\n        onClose={closeDeleteModal}\n        onConfirm={handleConfirmDelete}\n      />\n    </div>\n  );\n};",
+        "other_components": [
+          {
+            "name": "Header",
+            "code": "import React from 'react';\n\nexport const Header = () => (\n  <h1 className=\"text-3xl font-bold text-slate-800 text-center mb-6\">My Todos</h1>\n);"
+          },
+          {
+            "name": "AddTodoForm",
+            "code": "import React, { useState } from 'react';\n\nexport const AddTodoForm = ({ onAdd }) => {\n  const [title, setTitle] = useState('');\n  const [description, setDescription] = useState('');\n\n  const handleSubmit = (e) => {\n    e.preventDefault();\n    if (!title.trim()) return;\n    onAdd({ title, description });\n    setTitle('');\n    setDescription('');\n  };\n\n  return (\n    <form onSubmit={handleSubmit} className=\"mb-6 space-y-4\">\n      <div>\n        <input \n          type=\"text\" \n          placeholder=\"Task Title\" \n          value={title}\n          onChange={(e) => setTitle(e.target.value)}\n          className=\"w-full p-3 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500\"\n        />\n      </div>\n      <div>\n        <textarea \n          placeholder=\"Description (optional)\" \n          value={description}\n          onChange={(e) => setDescription(e.target.value)}\n          rows=\"3\"\n          className=\"w-full p-3 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500\"\n        />\n      </div>\n      <button type=\"submit\" className=\"w-full bg-blue-500 text-white font-medium py-3 px-4 rounded-md hover:bg-blue-600 transition-colors\">Add Task</button>\n    </form>\n  );\n};"
+          },
+          {
+            "name": "TodoList",
+            "code": "import React from 'react';\nimport { TodoItem } from './TodoItem';\n\nexport const TodoList = ({ todos, onToggle, onDelete }) => (\n  <div className=\"space-y-3\">\n    {todos.length > 0 ? (\n      todos.map(todo => (\n        <TodoItem key={todo.id} todo={todo} onToggle={onToggle} onDelete={onDelete} />\n      ))\n    ) : (\n      <p className=\"text-slate-500 text-center py-4\">No todos yet. Add one above!</p>\n    )}\n  </div>\n);"
+          },
+          {
+            "name": "TodoItem",
+            "code": "import React from 'react';\n\nexport const TodoItem = ({ todo, onToggle, onDelete }) => {\n  return (\n    <div className=\"flex items-start p-4 bg-slate-50 rounded-md border border-slate-200 group\">\n      <input \n        type=\"checkbox\" \n        checked={todo.completed}\n        onChange={() => onToggle(todo.id, !todo.completed)}\n        className=\"mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500\"\n      />\n      <div className={`flex-grow mx-4 ${todo.completed ? 'line-through text-slate-400' : 'text-slate-800'}`}>\n        <p className=\"font-medium\">{todo.title}</p>\n        <p className=\"text-sm text-slate-600 ${todo.completed ? 'text-slate-400' : ''}`}>{todo.description}</p>\n      </div>\n      <button onClick={() => onDelete(todo.id)} className=\"text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity\">\n        <svg xmlns=\"http://www.w3.org/2000/svg\" className=\"h-6 w-6\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n          <path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16\" />\n        </svg>\n      </button>\n    </div>\n  );\n};"
+          },
+          {
+            "name": "ConfirmationModal",
+            "code": "import React from 'react';\n\nexport const ConfirmationModal = ({ isOpen, onClose, onConfirm }) => {\n  if (!isOpen) return null;\n\n  return (\n    <div className=\"fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50\">\n      <div className=\"bg-white rounded-lg p-6 shadow-xl w-full max-w-sm mx-4\">\n        <h2 className=\"text-xl font-semibold text-slate-800\">Confirm Deletion</h2>\n        <p className=\"text-slate-600 mt-2 mb-6\">Are you sure you want to delete this task? This action cannot be undone.</p>\n        <div className=\"flex justify-end space-x-4\">\n          <button onClick={onClose} className=\"px-4 py-2 bg-slate-200 text-slate-800 rounded-md hover:bg-slate-300\">Cancel</button>\n          <button onClick={onConfirm} className=\"px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600\">Delete</button>\n        </div>\n      </div>\n    </div>\n  );\n};"
+          }
+        ],
+        "styles": "TailwindCSS utility classes are used directly in the JSX of each component. No separate CSS file is needed. The classes align with the style guide provided (e.g., bg-slate-100 for background, bg-blue-500 for primary actions, text-slate-800 for text).",
+        "api_client": "const API_BASE_URL = 'http://localhost:8000'; // Should be in an environment variable\n\nconst handleResponse = async (response) => {\n  if (!response.ok) {\n    const error = await response.json().catch(() => ({ message: 'An unknown error occurred' }));\n    throw new Error(error.detail || error.message);\n  }\n  return response.status !== 204 ? response.json() : null;\n};\n\nexport const fetchTodos = async () => {\n  const response = await fetch(`${API_BASE_URL}/todos`);\n  return handleResponse(response);\n};\n\nexport const createTodo = async (todo) => {\n  const response = await fetch(`${API_BASE_URL}/todos`, {\n    method: 'POST',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify(todo),\n  });\n  return handleResponse(response);\n};\n\nexport const updateTodo = async (id, updates) => {\n  const response = await fetch(`${API_BASE_URL}/todos/${id}`, {\n    method: 'PUT',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify(updates),\n  });\n  return handleResponse(response);\n};\n\nexport const deleteTodo = async (id) => {\n  const response = await fetch(`${API_BASE_URL}/todos/${id}`, {\n    method: 'DELETE',\n  });\n  return handleResponse(response);\n};",
+        "instructions": "1. Ensure you have Node.js and npm installed.\n2. Set up a new React project: `npx create-react-app my-todo-app`\n3. Install TailwindCSS: Follow the official guide at https://tailwindcss.com/docs/guides/create-react-app\n4. Replace the contents of `src/` with the provided component and API client files.\n5. Update your main `src/index.js` to render the `TodoApp` component.\n6. Run the development server: `npm start`.\n7. Make sure the backend API server is running at `http://localhost:8000`."
+      },
+      "error": false
+    },
+    "be_code": {
+      "decision": "DECIDED",
+      "confidence": 1.0,
+      "reasoning": "Applied the suggested fix to the `GET /todos` endpoint by ordering the results by ID in descending order. This ensures that the newest items are returned first, resolving the UI inconsistency reported. Added a new unit test, `test_list_order_consistency_on_refresh`, to verify the correct sorting order and updated the API documentation to reflect this change.",
+      "be_code": {
+        "main_file": "# main.py\nimport uvicorn\nfrom fastapi import FastAPI, Depends, HTTPException, status\nfrom sqlalchemy import create_engine, Column, Integer, String, Boolean\nfrom sqlalchemy.ext.declarative import declarative_base\nfrom sqlalchemy.orm import sessionmaker, Session\nfrom pydantic import BaseModel, Field\nfrom typing import List, Optional\n\n# --- Database Setup ---\nDATABASE_URL = \"sqlite:///./todos.db\"\nengine = create_engine(DATABASE_URL, connect_args={\"check_same_thread\": False})\nSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)\nBase = declarative_base()\n\n# --- SQLAlchemy Model ---\nclass DBTodo(Base):\n    __tablename__ = \"todos\"\n    id = Column(Integer, primary_key=True, index=True)\n    title = Column(String, index=True)\n    description = Column(String, index=True)\n    completed = Column(Boolean, default=False)\n\n# Create the database tables on startup\nBase.metadata.create_all(bind=engine)\n\n# --- Pydantic Schemas ---\nclass TodoBase(BaseModel):\n    title: str = Field(..., min_length=1, description=\"Title of the todo item\")\n    description: str\n\nclass TodoCreate(TodoBase):\n    pass\n\nclass TodoUpdate(BaseModel):\n    title: Optional[str] = Field(None, min_length=1, description=\"Optional new title\")\n    description: Optional[str] = None\n    completed: Optional[bool] = None\n\nclass Todo(TodoBase):\n    id: int\n    completed: bool\n\n    class Config:\n        orm_mode = True\n\n# --- Dependency ---\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n\n# --- FastAPI App ---\napp = FastAPI(title=\"Todo API\", description=\"A simple API for a Todo application\", version=\"1.0.0\")\n\n# --- API Routes ---\n@app.post(\"/todos\", response_model=Todo, status_code=status.HTTP_201_CREATED)\ndef create_todo(todo: TodoCreate, db: Session = Depends(get_db)):\n    db_todo = DBTodo(title=todo.title, description=todo.description)\n    db.add(db_todo)\n    db.commit()\n    db.refresh(db_todo)\n    return db_todo\n\n@app.get(\"/todos\", response_model=List[Todo])\ndef read_todos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):\n    todos = db.query(DBTodo).order_by(DBTodo.id.desc()).offset(skip).limit(limit).all()\n    return todos\n\n@app.put(\"/todos/{id}\", response_model=Todo)\ndef update_todo(id: int, todo: TodoUpdate, db: Session = Depends(get_db)):\n    db_todo = db.query(DBTodo).filter(DBTodo.id == id).first()\n    if db_todo is None:\n        raise HTTPException(status_code=404, detail=\"Todo not found\")\n    \n    update_data = todo.dict(exclude_unset=True)\n    for key, value in update_data.items():\n        setattr(db_todo, key, value)\n        \n    db.add(db_todo)\n    db.commit()\n    db.refresh(db_todo)\n    return db_todo\n\n@app.delete(\"/todos/{id}\", status_code=status.HTTP_200_OK)\ndef delete_todo(id: int, db: Session = Depends(get_db)):\n    db_todo = db.query(DBTodo).filter(DBTodo.id == id).first()\n    if db_todo is None:\n        raise HTTPException(status_code=404, detail=\"Todo not found\")\n    \n    db.delete(db_todo)\n    db.commit()\n    return {\"message\": \"Todo deleted successfully\"}\n",
+        "routes": "@app.post(\"/todos\", response_model=Todo, status_code=status.HTTP_201_CREATED)\ndef create_todo(todo: TodoCreate, db: Session = Depends(get_db)):\n    db_todo = DBTodo(title=todo.title, description=todo.description)\n    db.add(db_todo)\n    db.commit()\n    db.refresh(db_todo)\n    return db_todo\n\n@app.get(\"/todos\", response_model=List[Todo])\ndef read_todos(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):\n    todos = db.query(DBTodo).order_by(DBTodo.id.desc()).offset(skip).limit(limit).all()\n    return todos\n\n@app.put(\"/todos/{id}\", response_model=Todo)\ndef update_todo(id: int, todo: TodoUpdate, db: Session = Depends(get_db)):\n    db_todo = db.query(DBTodo).filter(DBTodo.id == id).first()\n    if db_todo is None:\n        raise HTTPException(status_code=404, detail=\"Todo not found\")\n    \n    update_data = todo.dict(exclude_unset=True)\n    for key, value in update_data.items():\n        setattr(db_todo, key, value)\n        \n    db.add(db_todo)\n    db.commit()\n    db.refresh(db_todo)\n    return db_todo\n\n@app.delete(\"/todos/{id}\", status_code=status.HTTP_200_OK)\ndef delete_todo(id: int, db: Session = Depends(get_db)):\n    db_todo = db.query(DBTodo).filter(DBTodo.id == id).first()\n    if db_todo is None:\n        raise HTTPException(status_code=404, detail=\"Todo not found\")\n    \n    db.delete(db_todo)\n    db.commit()\n    return {\"message\": \"Todo deleted successfully\"}\n",
+        "models": "# SQLAlchemy ORM Model\nclass DBTodo(Base):\n    __tablename__ = \"todos\"\n    id = Column(Integer, primary_key=True, index=True)\n    title = Column(String, index=True)\n    description = Column(String, index=True)\n    completed = Column(Boolean, default=False)\n",
+        "tests": "# test_main.py\nimport pytest\nfrom fastapi.testclient import TestClient\nfrom sqlalchemy import create_engine\nfrom sqlalchemy.orm import sessionmaker\n\nfrom main import app, Base, get_db\n\n# --- Test Database Setup ---\nSQLALCHEMY_DATABASE_URL = \"sqlite:///./test.db\"\nengine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={\"check_same_thread\": False})\nTestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)\n\n# Override the get_db dependency for tests\ndef override_get_db():\n    try:\n        db = TestingSessionLocal()\n        yield db\n    finally:\n        db.close()\n\napp.dependency_overrides[get_db] = override_get_db\n\nclient = TestClient(app)\n\n# --- Test Fixtures ---\n@pytest.fixture(scope=\"function\", autouse=True)\ndef setup_teardown_database():\n    Base.metadata.create_all(bind=engine)\n    yield\n    Base.metadata.drop_all(bind=engine)\n\n# --- Tests ---\ndef test_create_todo():\n    response = client.post(\"/todos\", json={\"title\": \"Test Todo\", \"description\": \"Test description\"})\n    assert response.status_code == 201\n    data = response.json()\n    assert data[\"title\"] == \"Test Todo\"\n    assert data[\"description\"] == \"Test description\"\n    assert data[\"completed\"] is False\n    assert \"id\" in data\n\ndef test_create_todo_empty_title():\n    response = client.post(\"/todos\", json={\"title\": \"\", \"description\": \"This should fail\"})\n    assert response.status_code == 422\n\ndef test_read_todos():\n    client.post(\"/todos\", json={\"title\": \"Todo 1\", \"description\": \"Desc 1\"})\n    response = client.get(\"/todos\")\n    assert response.status_code == 200\n    data = response.json()\n    assert len(data) == 1\n    assert data[0][\"title\"] == \"Todo 1\"\n\ndef test_update_todo_completion():\n    create_response = client.post(\"/todos\", json={\"title\": \"To be updated\", \"description\": \"Initial state\"})\n    todo_id = create_response.json()[\"id\"]\n    update_response = client.put(f\"/todos/{todo_id}\", json={\"completed\": True})\n    assert update_response.status_code == 200\n    data = update_response.json()\n    assert data[\"completed\"] is True\n\ndef test_update_nonexistent_todo():\n    response = client.put(\"/todos/999\", json={\"completed\": True})\n    assert response.status_code == 404\n\ndef test_delete_todo():\n    create_response = client.post(\"/todos\", json={\"title\": \"To be deleted\", \"description\": \"\"})\n    todo_id = create_response.json()[\"id\"]\n    delete_response = client.delete(f\"/todos/{todo_id}\")\n    assert delete_response.status_code == 200\n    assert delete_response.json() == {\"message\": \"Todo deleted successfully\"}\n    get_response = client.get(\"/todos\")\n    assert len(get_response.json()) == 0\n\ndef test_delete_nonexistent_todo():\n    response = client.delete(\"/todos/999\")\n    assert response.status_code == 404\n\ndef test_list_order_consistency_on_refresh():\n    client.post(\"/todos\", json={\"title\": \"First Todo\", \"description\": \"old\"})\n    client.post(\"/todos\", json={\"title\": \"Second Todo\", \"description\": \"new\"})\n    response = client.get(\"/todos\")\n    assert response.status_code == 200\n    data = response.json()\n    assert len(data) == 2\n    assert data[0][\"title\"] == \"Second Todo\"\n    assert data[1][\"title\"] == \"First Todo\"\n",
+        "instructions": "1. Create a virtual environment: `python -m venv venv` and activate it.\n2. Install dependencies: `pip install fastapi 'uvicorn[standard]' sqlalchemy pydantic pytest httpx`.\n3. Run the application server: `uvicorn main:app --reload`.\n4. The API will be available at http://127.0.0.1:8000 and the interactive documentation (Swagger UI) at http://127.0.0.1:8000/docs.\n5. Run tests from the project root directory: `pytest`."
+      },
+      "api_documentation": [
+        {
+          "endpoint": "/todos",
+          "method": "GET",
+          "description": "Retrieve the list of all todo items, sorted by newest first.",
+          "request": {},
+          "response": {
+            "type": "array",
+            "items": {
+              "id": "integer",
+              "title": "string",
+              "description": "string",
+              "completed": "boolean"
+            }
+          }
+        },
+        {
+          "endpoint": "/todos",
+          "method": "POST",
+          "description": "Create a new todo item.",
+          "request": {
+            "title": "string",
+            "description": "string"
+          },
+          "response": {
+            "id": "integer",
+            "title": "string",
+            "description": "string",
+            "completed": "boolean"
+          }
+        },
+        {
+          "endpoint": "/todos/{id}",
+          "method": "PUT",
+          "description": "Update an existing todo item. All fields are optional.",
+          "request": {
+            "title": "string (optional)",
+            "description": "string (optional)",
+            "completed": "boolean (optional)"
+          },
+          "response": {
+            "id": "integer",
+            "title": "string",
+            "description": "string",
+            "completed": "boolean"
+          }
+        },
+        {
+          "endpoint": "/todos/{id}",
+          "method": "DELETE",
+          "description": "Delete a todo item by its ID.",
+          "request": {},
+          "response": {
+            "message": "string"
+          }
+        }
+      ],
+      "error": false
+    }
+  },
+  "context": {
+    "user_inputs": [],
+    "last_error": [
+      {
+        "role": "be_dev",
+        "message": "The GET /todos endpoint returns items in the default database order (likely oldest first). However, the frontend optimistically adds new items to the top of its list. This discrepancy causes the entire list to unexpectedly re-sort itself when the user refreshes the page.",
+        "suggestion": "Modify the `read_todos` function in `main.py` to sort the results in descending order of ID, ensuring the newest items are always returned first. The updated SQLAlchemy query should be: `db.query(DBTodo).order_by(DBTodo.id.desc()).offset(skip).limit(limit).all()`.",
+        "test_case": "test_list_order_consistency_on_refresh"
+      }
+    ],
+    "failed_role": "be_dev"
+  },
+  "history": []
+}

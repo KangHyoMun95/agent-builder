@@ -1,0 +1,62 @@
+{
+  "decision": "NEED_USER_INPUT",
+  "confidence": 0.6,
+  "reasoning": "The core features for the todo app are clear, but key user interactions like editing items, filtering the list, and input validation are not specified. Clarifying these requirements is essential to define the full scope and avoid incorrect assumptions.",
+  "question": "The basic features are understood. To ensure the application meets your expectations, please clarify the following:\n1. **Editing:** Should users be able to edit the title or description of a todo after it has been created?\n2. **Filtering:** When viewing the list, should users have options to filter by 'All', 'Active', and 'Completed' todos?\n3. **Empty Todos:** What should happen if a user tries to create a todo with an empty title?",
+  "requirements": {
+    "prd_summary": "A web application for managing a personal list of tasks. Users can add, view, mark as complete, and delete todo items. The application will persist data for a single user session and does not require authentication.",
+    "user_stories": [
+      {
+        "title": "Add a new todo item",
+        "description": "As a user, I want to add a new todo with a title and description so that I can capture tasks I need to complete.",
+        "acceptance_criteria": [
+          "An input form with fields for 'title' and 'description' is visible.",
+          "A 'submit' or 'add' button exists.",
+          "When the form is submitted, the new todo item appears in the list.",
+          "The new todo is marked as 'incomplete' by default."
+        ]
+      },
+      {
+        "title": "View the list of todos",
+        "description": "As a user, I want to see all my todo items so that I have an overview of what I need to do.",
+        "acceptance_criteria": [
+          "All created todo items are displayed in a list.",
+          "Each item in the list clearly shows its title, description, and completion status."
+        ]
+      },
+      {
+        "title": "Mark a todo as completed",
+        "description": "As a user, I want to mark a todo item as completed so that I can track my progress.",
+        "acceptance_criteria": [
+          "Each todo item has a control (e.g., a checkbox) to change its completion status.",
+          "Activating the control toggles the item's status between 'complete' and 'incomplete'.",
+          "The visual appearance of a completed item is distinct from an incomplete one (e.g., strikethrough text)."
+        ]
+      },
+      {
+        "title": "Delete a todo item",
+        "description": "As a user, I want to delete a todo item so that I can remove tasks that are no longer needed.",
+        "acceptance_criteria": [
+          "Each todo item has a 'delete' button.",
+          "Clicking the 'delete' button prompts for confirmation.",
+          "Upon confirmation, the item is permanently removed from the list."
+        ]
+      }
+    ],
+    "non_functional": {
+      "performance": "UI actions (add, delete, complete) should feel instantaneous, completing in under 300ms.",
+      "security": "No authentication is required. No sensitive data will be stored.",
+      "usability": "The interface should be clean, intuitive, and usable on modern desktop web browsers."
+    },
+    "constraints": [
+      "The application is for a single user; no multi-user or authentication features are needed.",
+      "Data persistence is required (todos should remain after a page refresh)."
+    ],
+    "assumptions": [
+      "All todos are visible to any visitor of the application.",
+      "The order of todos in the list is not significant, but newly added items could appear at the top or bottom.",
+      "Users will not need to handle a very large number of todos (e.g., >1000), so simple list rendering is sufficient."
+    ]
+  },
+  "error": false
+}

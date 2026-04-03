@@ -1,15 +1,12 @@
-# Task: Authentication System
+# Project: Todo List App
 
-## Goal
-Build a login system
+Build a web application where users can:
+- Add a new todo item (with title and description)
+- Mark a todo as completed
+- Delete a todo
+- View list of all todos
 
-## Options
-- JWT (stateless)
-- Session (stateful)
-
-## Constraints
-- Not specified
-
-## Notes
-- System scale not defined
-- Security level not defined
+Technical preferences:
+- Backend: FastAPI (Python) with SQLite
+- Frontend: React
+- No authentication required
